@@ -1,0 +1,57 @@
+{
+  "name": "@genesis-tech/peerpay-agent",
+  "version": "0.1.0",
+  "description": "Client SDK for the PeerPay Agent API (pay URLs, poll approvals).",
+  "license": "MIT",
+  "author": "GenesisTech",
+  "homepage": "https://github.com/GenesisTechAT/peerpay-js/tree/main/packages/agent-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GenesisTechAT/peerpay-js.git",
+    "directory": "packages/agent-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/GenesisTechAT/peerpay-js/issues"
+  },
+  "keywords": [
+    "x402",
+    "http-402",
+    "payments",
+    "usdc",
+    "stablecoin",
+    "base",
+    "ai-agents",
+    "agentic-payments",
+    "agent-wallet"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@genesis-tech/peerpay-protocol": "^0.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

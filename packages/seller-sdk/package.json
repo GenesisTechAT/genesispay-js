@@ -1,0 +1,58 @@
+{
+  "name": "@genesis-tech/peerpay-seller",
+  "version": "0.5.0",
+  "description": "Framework-agnostic x402 payment gate for sellers, powered by PeerPay.",
+  "license": "MIT",
+  "author": "GenesisTech",
+  "homepage": "https://github.com/GenesisTechAT/peerpay-js/tree/main/packages/seller-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GenesisTechAT/peerpay-js.git",
+    "directory": "packages/seller-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/GenesisTechAT/peerpay-js/issues"
+  },
+  "keywords": [
+    "x402",
+    "http-402",
+    "payments",
+    "usdc",
+    "stablecoin",
+    "base",
+    "paywall",
+    "api-monetization",
+    "payment-gate"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@genesis-tech/peerpay-protocol": "^0.1.0",
+    "viem": "^2.48.11"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

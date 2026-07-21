@@ -1,0 +1,55 @@
+{
+  "name": "@genesis-tech/peerpay-protocol",
+  "version": "0.1.0",
+  "description": "Pure x402 V2 protocol types and encode/decode/validate helpers for PeerPay.",
+  "license": "MIT",
+  "author": "GenesisTech",
+  "homepage": "https://github.com/GenesisTechAT/peerpay-js/tree/main/packages/protocol#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GenesisTechAT/peerpay-js.git",
+    "directory": "packages/protocol"
+  },
+  "bugs": {
+    "url": "https://github.com/GenesisTechAT/peerpay-js/issues"
+  },
+  "keywords": [
+    "x402",
+    "http-402",
+    "payments",
+    "usdc",
+    "stablecoin",
+    "base",
+    "eip-3009",
+    "agentic-payments"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "viem": "^2.48.11"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
