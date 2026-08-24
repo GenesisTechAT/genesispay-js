@@ -1,0 +1,66 @@
+name: Publish to npm
+
+# Publishes all @genesis-tech packages when a version tag is pushed:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# Requires each package's npm Trusted Publisher to authorize this workflow (see
+# docs/runbooks/OPEN_SOURCE_RELEASE.md in the private GenesisPay repo). Package
+# versions are NOT derived from the tag; bump them in each package.json first.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write # npm Trusted Publishing (OIDC) + automatic provenance
+
+jobs:
+  publish:
+    name: Build, test & publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: npm ci
+
+      - name: Build packages
+        run: |
+          npx tsc -b packages/protocol packages/seller-sdk packages/agent-sdk packages/mcp-server --clean
+          npm run build -- --force
+
+      - name: Test
+        run: npm test
+
+      - name: Verify package artifacts
+        run: npm run verify:artifacts
+
+      # Publish in dependency order so semver ranges always resolve on the
+      # registry: protocol first, then the SDKs, then the MCP server.
+      #
+      # Each package is skipped when its version is already on the registry.
+      # A release rarely bumps all four, and npm rejects re-publishing an
+      # existing version — without this the first unchanged package fails the
+      # job and every package after it is never reached.
+      - name: Publish packages
+        run: |
+          set -euo pipefail
+          for dir in protocol seller-sdk agent-sdk mcp-server; do
+            name=$(node -p "require('./packages/$dir/package.json').name")
+            version=$(node -p "require('./packages/$dir/package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already on npm — skipping."
+              continue
+            fi
+            echo "Publishing $name@$version"
+            npm publish --workspace "$name" --access public
+          done
