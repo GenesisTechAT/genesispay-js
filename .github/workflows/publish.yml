@@ -1,0 +1,64 @@
+name: Publish to npm
+
+# Publishes all @genesis-tech packages when a version tag is pushed:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# Requires the repository secret NPM_TOKEN — an npm automation token with
+# publish rights on the @genesis-tech org (see docs in the main GenesisPay repo,
+# docs/runbooks/OPEN_SOURCE_RELEASE.md). Package versions are NOT derived from the tag; bump
+# them in each packages/*/package.json before tagging.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    name: Build, test & publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      # Publish in dependency order so semver ranges always resolve on the
+      # registry: protocol first, then the SDKs, then the MCP server.
+      #
+      # Each package is skipped when its version is already on the registry.
+      # A release rarely bumps all four, and npm rejects re-publishing an
+      # existing version — without this the first unchanged package fails the
+      # job and every package after it is never reached.
+      - name: Publish packages
+        run: |
+          set -euo pipefail
+          for dir in protocol seller-sdk agent-sdk mcp-server; do
+            name=$(node -p "require('./packages/$dir/package.json').name")
+            version=$(node -p "require('./packages/$dir/package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already on npm — skipping."
+              continue
+            fi
+            echo "Publishing $name@$version"
+            npm publish --workspace "$name" --provenance --access public
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
