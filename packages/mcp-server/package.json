@@ -1,0 +1,64 @@
+{
+  "name": "@genesis-tech/genesispay-mcp",
+  "version": "0.2.0",
+  "description": "MCP stdio server exposing GenesisPay payment tools for AI agents.",
+  "license": "MIT",
+  "author": "GenesisTech",
+  "homepage": "https://github.com/GenesisTechAT/genesispay-js/tree/main/packages/mcp-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GenesisTechAT/genesispay-js.git",
+    "directory": "packages/mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/GenesisTechAT/genesispay-js/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "x402",
+    "http-402",
+    "payments",
+    "usdc",
+    "base",
+    "ai-agents",
+    "claude",
+    "agentic-payments"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "genesispay-mcp": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "prepack": "npm run build -- --force",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@genesis-tech/genesispay-agent": "^0.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
