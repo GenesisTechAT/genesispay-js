@@ -1,0 +1,54 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "finance.genesispay/mcp",
+  "title": "GenesisPay",
+  "description": "Let an AI agent find and pay for x402 APIs and products in USDC on Base, within owner-set limits.",
+  "version": "1.8.0",
+  "websiteUrl": "https://genesispay.finance/docs/mcp",
+  "repository": {
+    "url": "https://github.com/GenesisTechAT/genesispay-js",
+    "source": "github",
+    "subfolder": "packages/mcp-server"
+  },
+  "icons": [
+    {
+      "src": "https://genesispay.finance/icon.png",
+      "mimeType": "image/png"
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://genesispay.finance/mcp"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@genesis-tech/genesispay-mcp",
+      "version": "1.8.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "GENESISPAY_AGENT_KEY",
+          "description": "Agent API key (gp_ag_...), created on the GenesisPay dashboard under the agent account's Keys tab.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "GENESISPAY_BASE_URL",
+          "description": "Base URL of the GenesisPay deployment the agent key belongs to.",
+          "isRequired": true,
+          "isSecret": false,
+          "format": "string",
+          "default": "https://genesispay.finance"
+        }
+      ]
+    }
+  ]
+}
