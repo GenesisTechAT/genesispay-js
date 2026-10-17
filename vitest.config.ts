@@ -1,0 +1,31 @@
+import path from "node:path";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "node",
+    include: ["packages/*/src/**/*.test.ts", "scripts/**/*.test.mjs"],
+  },
+  resolve: {
+    alias: {
+      // Resolve workspace packages from source so tests do not depend on a
+      // prior `npm run build` dist output.
+      "@genesis-tech/genesispay-protocol/asset-deployments": path.resolve(
+        __dirname,
+        "packages/protocol/src/asset-deployments.ts",
+      ),
+      "@genesis-tech/genesispay-protocol": path.resolve(
+        __dirname,
+        "packages/protocol/src/index.ts",
+      ),
+      "@genesis-tech/genesispay-agent": path.resolve(
+        __dirname,
+        "packages/agent-sdk/src/index.ts",
+      ),
+      "@genesis-tech/genesispay-seller": path.resolve(
+        __dirname,
+        "packages/seller-sdk/src/index.ts",
+      ),
+    },
+  },
+});
