@@ -1,0 +1,113 @@
+name: Publish to npm
+
+# Publishes all @genesis-tech packages when a version tag is pushed:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# Requires each package's npm Trusted Publisher to authorize this workflow AND
+# the `npm-publish` environment (see docs/runbooks/OPEN_SOURCE_RELEASE.md in
+# the private GenesisPay repo). Package versions are NOT derived from the tag;
+# bump them in each package.json first.
+#
+# Two jobs, so the job that can mint the npm OIDC identity runs as little
+# third-party code as possible:
+#
+#   verify   no id-token. Installs, builds and runs the test suite.
+#   publish  `environment: npm-publish` (a required reviewer approves the run
+#            before this job starts) and `id-token: write`. Installs, rebuilds,
+#            re-verifies the artifacts and publishes. Tests do not run here.
+#
+# Both installs use `npm ci --ignore-scripts`: no dependency install/postinstall
+# script ever runs. No workspace package needs one at install time; the
+# packages' own `prepack` (a forced `tsc -b`) still runs inside `npm publish`.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Nothing by default; each job asks for exactly what it needs.
+permissions: {}
+
+jobs:
+  verify:
+    name: Build & test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Build packages
+        run: |
+          npx tsc -b packages/protocol packages/seller-sdk packages/agent-sdk packages/mcp-server --clean
+          npm run build -- --force
+
+      - name: Test
+        run: npm test
+
+      - name: Verify package artifacts
+        run: npm run verify:artifacts
+
+  publish:
+    name: Publish
+    needs: verify
+    runs-on: ubuntu-latest
+    # Required reviewers + a `v*` tag deployment policy live on this
+    # environment, and npm trusts only OIDC tokens issued for it.
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC) + automatic provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Build packages
+        run: |
+          npx tsc -b packages/protocol packages/seller-sdk packages/agent-sdk packages/mcp-server --clean
+          npm run build -- --force
+
+      - name: Verify package artifacts
+        run: npm run verify:artifacts
+
+      # Publish in dependency order so semver ranges always resolve on the
+      # registry: protocol first, then the SDKs, then the MCP server.
+      #
+      # Each package is skipped when its version is already on the registry.
+      # A release rarely bumps all four, and npm rejects re-publishing an
+      # existing version — without this the first unchanged package fails the
+      # job and every package after it is never reached.
+      - name: Publish packages
+        run: |
+          set -euo pipefail
+          for dir in protocol seller-sdk agent-sdk mcp-server; do
+            name=$(node -p "require('./packages/$dir/package.json').name")
+            version=$(node -p "require('./packages/$dir/package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already on npm — skipping."
+              continue
+            fi
+            echo "Publishing $name@$version"
+            npm publish --workspace "$name" --access public
+          done
